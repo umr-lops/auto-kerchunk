@@ -58,7 +58,7 @@ def cli_multi_zarr_to_zarr(
 ):
     import dask.array
 
-    arr = dask.array.ones(shape=(10000, 10000, 100), chunks={10, 10, 100})
+    arr = dask.array.ones(shape=(10000, 10000, 100), chunks=(10, 10, 100))
     console.print("computing the sum of:", arr)
     console.print("result:", arr.sum().compute())
 
