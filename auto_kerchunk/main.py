@@ -52,9 +52,9 @@ def cli_single_hdf5_to_zarr(
     paths: list[str] = typer.Argument(
         ...,
         help=(
-            "the input files. Can be a list of paths or urls (as understood"
-            " by `fsspec`). If just a single path or url for a directory was"
-            " given, that directory is searched according to `glob`."
+            "The input files. A list of paths or urls (as understood by `fsspec`)."
+            " Reading from multiple sources is not supported. If a path or url"
+            " points to a directory, that directory is searched using `glob`."
         ),
     ),
     root: pathlib.Path = typer.Argument(
@@ -68,6 +68,10 @@ def cli_single_hdf5_to_zarr(
             " path is 'a/b/c/file.nc' and `relative_to` is 'a/b', the metadata file"
             " path relative to `root` will be 'c/file.nc'."
         ),
+    ),
+    glob: str = typer.Option(
+        "**/*.nc",
+        help=("search directories using this glob"),
     ),
 ):
     """extract the metadata from HDF5 files and write it to separate files"""
