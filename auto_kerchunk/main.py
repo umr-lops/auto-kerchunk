@@ -31,16 +31,20 @@ def cli_main_options(
         options = dict(item.split("=") for item in cluster_options.split(";") if item)
         with console.status("[bold blue] Starting cluster", spinner="dots") as status:
             status.update(
-                status="[bold blue] Starting cluster: [white]connecting to {cluster_name!r}"
+                status=f"[bold blue] Starting cluster:[/] [white]connecting to {cluster_name!r}"
             )
             cluster = ifremer_clusters.cluster(cluster_name, **options)
             console.log("connected to the cluster")
 
-            status.update(status="[bold blue] Starting cluster: [white]spawn workers")
+            status.update(
+                status="[bold blue] Starting cluster:[/] [white]spawn workers"
+            )
             cluster.scale(cluster_workers)
             console.log("workers spawned")
 
-            status.update(status="[bold blue] Starting cluster: [white]creating client")
+            status.update(
+                status="[bold blue] Starting cluster:[/] [white]creating client"
+            )
             client = Client(cluster)
             console.log(f"client: dashboard link: {client.dashboard_link}")
             console.log(
