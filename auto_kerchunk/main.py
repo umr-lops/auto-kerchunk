@@ -111,7 +111,7 @@ def cli_single_hdf5_to_zarr(
         console.log(f"collected {len(all_urls)} input files")
 
         status.update(
-            "[blue bold] extracting metadata: [/][white]preparing computation"
+            "[blue bold] extracting metadata:[/] [white]preparing computation"
         )
         tasks = dict(
             convert.compute_outpath(u, root, relative_to=relative_to) for u in all_urls
@@ -123,7 +123,7 @@ def cli_single_hdf5_to_zarr(
 
         dsk = [dask.delayed(convert.gen_json_hdf5)(fs, u, p) for u, p in tasks.items()]
         console.log("done constructing the task graph")
-        status.update("[blue bold] extracting metadata: [/][white]computing ...")
+        status.update("[blue bold] extracting metadata:[/] [white]computing ...")
         _ = dask.compute(dsk)
 
     console.print("[green bold] metadata extraction successfully completed")
