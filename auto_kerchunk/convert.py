@@ -1,6 +1,9 @@
-from urllib.parse import urlparse
 import os
 import pathlib
+from urllib.parse import urlparse
+
+import ujson
+from kerchunk.hdf5 import SingleHdf5ToZarr
 
 
 def compute_outpath(url, outroot, *, relative_to=None, type="json"):
@@ -71,7 +74,7 @@ def compute_outpath(url, outroot, *, relative_to=None, type="json"):
 
 def gen_json_hdf5(fs, url, outpath, **storage_options):
     """extract the metadata of a HDF5 file and save it
-    
+
     Parameters
     ----------
     fs : fsspec.filesystem

@@ -29,4 +29,3 @@ def combine_json(paths, outpath, compression=None):
     if compression is not None:
         data = outpath.read_bytes()
         outpath.write_bytes(blosc.compress(data, typesize=8, cname=str(compression)))
-
