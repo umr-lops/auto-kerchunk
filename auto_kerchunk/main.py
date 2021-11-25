@@ -42,7 +42,7 @@ def cli_main_options(
 
             status.update(status="[green] Starting cluster: creating client")
             client = Client(cluster)
-            console.log(f"client: dashboard link: {client.dashboard_like}")
+            console.log(f"client: dashboard link: {client.dashboard_link}")
             console.log(
                 "client: using these packages:",
                 client.get_versions(packages=["dask_jobqueue"]),
