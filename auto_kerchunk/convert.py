@@ -76,7 +76,7 @@ def compute_outpath(url, outroot, *, relative_to=None, type="json"):
         return url, outroot.joinpath(name)
 
     _, root = parse_url(os.fspath(relative_to))
-    relpath = path.relative_to(root.path)
+    relpath = path.relative_to(root)
     return url, outroot / relpath.with_name(name)
 
 
