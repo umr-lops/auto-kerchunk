@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import itertools
 import pathlib
+from glob import has_magic
 from typing import Optional
 
+import dask
+import fsspec
 import rich.console
 import typer
 
@@ -49,7 +53,7 @@ def cli_main_options(
 
 @app.command("single-hdf5-to-zarr")
 def cli_single_hdf5_to_zarr(
-    paths: list[str] = typer.Argument(
+    urls: list[str] = typer.Argument(
         ...,
         help=(
             "The input files. A list of paths or urls (as understood by `fsspec`)."
@@ -75,7 +79,54 @@ def cli_single_hdf5_to_zarr(
     ),
 ):
     """extract the metadata from HDF5 files and write it to separate files"""
-    pass
+    from . import convert
+
+    def glob_url(fs, url, default):
+        if fs.isfile(url):
+            return url
+
+        if has_magic(url):
+            globbed = url
+        # TODO: handle archive urls
+        else:
+            globbed = url.rstrip("/") + "/" + default
+
+        console.log("globbing:", globbed)
+        return [f"{fs.protocol}://{p}" for p in fs.glob(globbed)]
+
+    with console.status("[blue bold] extracting metadata", spinner="dots") as status:
+        status.update(
+            "[blue bold] extracting metadata: [/][white]collecting input files"
+        )
+        protocols = {convert.parse_url(url)[0] or "file" for url in urls}
+        if len(protocols) != 1:
+            console.log("[red bold] reading using multiple protocols is not supported")
+            raise SystemExit(1)
+
+        (protocol,) = protocols
+        fs = fsspec.filesystem(protocol)
+        all_urls = list(
+            itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
+        )
+        console.log(f"collected {len(all_urls)} input files")
+
+        status.update(
+            "[blue bold] extracting metadata: [/][white]preparing computation"
+        )
+        tasks = dict(
+            convert.compute_outpath(u, root, relative_to=relative_to) for u in all_urls
+        )
+        console.log("constructed output paths")
+        for parent in {p.parent for p in tasks.values()}:
+            parent.mkdir(exist_ok=True, parents=True)
+        console.log("created output folders")
+
+        dsk = [dask.delayed(convert.gen_json_hdf5)(fs, u, p) for u, p in tasks.items()]
+        console.log("done constructing the task graph")
+        status.update("[blue bold] extracting metadata: [/][white]computing ...")
+        _ = dask.compute(dsk)
+
+    console.print("[green bold] metadata extraction successfully completed")
 
 
 @app.command("multi-zarr-to-zarr")
