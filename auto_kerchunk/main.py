@@ -29,26 +29,26 @@ def cli_main_options(
         from distributed import Client
 
         options = dict(item.split("=") for item in cluster_options.split(";") if item)
-        with console.status("[green] Starting cluster", spinner="dots") as status:
+        with console.status("[bold blue] Starting cluster", spinner="dots") as status:
             status.update(
-                status="[green] Starting cluster: connecting to {cluster_name!r}"
+                status="[bold blue] Starting cluster: [white]connecting to {cluster_name!r}"
             )
             cluster = ifremer_clusters.cluster(cluster_name, **options)
             console.log("connected to the cluster")
 
-            status.update(status="[green] Starting cluster: spawn workers")
+            status.update(status="[bold blue] Starting cluster: [white]spawn workers")
             cluster.scale(cluster_workers)
             console.log("workers spawned")
 
-            status.update(status="[green] Starting cluster: creating client")
+            status.update(status="[bold blue] Starting cluster: [white]creating client")
             client = Client(cluster)
             console.log(f"client: dashboard link: {client.dashboard_link}")
             console.log(
-                "client: using these packages:",
+                "cluster: cluster information:",
                 client.get_versions(packages=["dask_jobqueue"]),
             )
 
-        console.print(f"[bold blue]cluster {cluster_name} started successfully")
+        console.print(f"[green]cluster {cluster_name} started successfully")
 
 
 @app.command("single-hdf5-to-zarr")
