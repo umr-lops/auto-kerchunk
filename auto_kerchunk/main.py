@@ -47,6 +47,33 @@ def cli_main_options(
         console.print(f"[bold blue]cluster {cluster_name} started successfully")
 
 
+@app.command("single-hdf5-to-zarr")
+def cli_single_hdf5_to_zarr(
+    paths: list[str] = typer.Argument(
+        ...,
+        help=(
+            "the input files. Can be a list of paths or urls (as understood"
+            " by `fsspec`). If just a single path or url for a directory was"
+            " given, that directory is searched according to `glob`."
+        ),
+    ),
+    root: pathlib.Path = typer.Argument(
+        ..., help="the directory to write the metadata files to."
+    ),
+    relative_to: str = typer.Option(
+        None,
+        help=(
+            "if given, the metadata file paths will recreate the directory structure"
+            " of the input paths relative to `relative_to`. For example, if the input"
+            " path is 'a/b/c/file.nc' and `relative_to` is 'a/b', the metadata file"
+            " path relative to `root` will be 'c/file.nc'."
+        ),
+    ),
+):
+    """extract the metadata from HDF5 files and write it to separate files"""
+    pass
+
+
 @app.command("multi-zarr-to-zarr")
 def cli_multi_zarr_to_zarr(
     urls: list[str] = typer.Argument(..., help="input urls / paths"),
