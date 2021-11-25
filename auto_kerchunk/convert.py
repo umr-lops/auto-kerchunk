@@ -70,7 +70,7 @@ def compute_outpath(url, outroot, *, relative_to=None, type="json"):
     name = f"{path.name}.{type}"
 
     if not isinstance(outroot, os.PathLike):
-        outroot = pathlib.Path(outroot)
+        outroot = pathlib.Path(outroot).absolute()
 
     if relative_to is None:
         return url, outroot.joinpath(name)
