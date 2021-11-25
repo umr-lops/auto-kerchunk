@@ -1,9 +1,17 @@
 import os
 import pathlib
-from urllib.parse import urlparse
 
 import ujson
 from kerchunk.hdf5 import SingleHdf5ToZarr
+
+
+def parse_url(url):
+    pattern = "://"
+    if pattern not in url:
+        return "", url
+
+    scheme, path = url.split(pattern)
+    return scheme, path
 
 
 def compute_outpath(url, outroot, *, relative_to=None, type="json"):
@@ -54,11 +62,11 @@ def compute_outpath(url, outroot, *, relative_to=None, type="json"):
     >>> str(outpath)
     'metadata/single/f1_e2500/best_estimate/2011/abc.nc.json'
     """
-    u = urlparse(os.fspath(url))
-    if not u.scheme:
-        url = f"file://{u.path}"
+    scheme, path = parse_url(os.fspath(url))
+    if not scheme:
+        url = f"file://{path}"
 
-    path = pathlib.Path(u.path)
+    path = pathlib.Path(path)
     name = f"{path.name}.{type}"
 
     if not isinstance(outroot, os.PathLike):
@@ -67,7 +75,7 @@ def compute_outpath(url, outroot, *, relative_to=None, type="json"):
     if relative_to is None:
         return url, outroot.joinpath(name)
 
-    root = urlparse(os.fspath(relative_to))
+    _, root = parse_url(os.fspath(relative_to))
     relpath = path.relative_to(root.path)
     return url, outroot / relpath.with_name(name)
 
