@@ -2,7 +2,7 @@ import os
 import pathlib
 
 import ujson
-from kerchunk.hdf5 import SingleHdf5ToZarr
+from kerchunk.hdf import SingleHdf5ToZarr
 
 
 def parse_url(url):
