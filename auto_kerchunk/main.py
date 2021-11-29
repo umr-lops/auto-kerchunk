@@ -6,6 +6,7 @@ from glob import has_magic
 from typing import Optional
 
 import dask
+import dask.diagnostics
 import fsspec
 import rich.console
 import typer
@@ -128,6 +129,8 @@ def cli_single_hdf5_to_zarr(
         dsk = [dask.delayed(convert.gen_json_hdf5)(fs, u, p) for u, p in tasks.items()]
         console.log("done constructing the task graph")
         status.update("[blue bold] extracting metadata:[/] [white]computing ...")
+
+    with dask.diagnostics.ProgressBar():
         _ = dask.compute(dsk)
 
     console.print("[green bold] metadata extraction successfully completed")
