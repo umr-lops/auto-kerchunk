@@ -190,8 +190,6 @@ def cli_multi_zarr_to_zarr(
         help="divide the files into groups (only for files divided by time for now). Can either be the size of the group or a frequency like '6M'.",
     ),
 ):
-    import dask.array
+    from . import combine
 
-    arr = dask.array.ones(shape=(1000, 1000, 100), chunks=(10, 10, 100))
-    console.print("computing the sum of:", arr)
-    console.print("result:", arr.sum().compute())
+    combine.combine_json(urls, outpath)
