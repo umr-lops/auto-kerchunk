@@ -10,11 +10,47 @@ import dask.diagnostics
 import fsspec
 import rich.console
 import typer
+from rich.table import Table
 
 from .compression import CompressionAlgorithms
 
 app = typer.Typer()
 console = rich.console.Console()
+
+
+def format_client_versions(versions) -> Table:
+    def format_environment(env):
+        table = Table(box=None)
+        table.add_column("")
+        table.add_column("value")
+        for p, v in sorted(env.items()):
+            table.add_row(str(p), str(v))
+        return table
+
+    def format_system(system):
+        # reformat to a table of package → system
+        table = Table.grid(padding=1)
+        table.add_column("environment", justify="center", style="bold")
+        table.add_column("info")
+
+        for name, env in system.items():
+            subtable = format_environment(env)
+            table.add_row(name, subtable)
+
+        return table
+
+    table = Table.grid(padding=1, pad_edge=True)
+    table.add_column("system", no_wrap=True, justify="center", style="bold red")
+    table.add_column("values")
+    for section in ["client", "scheduler"]:
+        data = versions.get(section)
+        if data is None:
+            continue
+
+        subtable = format_system(data)
+        table.add_row(section, subtable)
+
+    return table
 
 
 @app.callback()
@@ -23,14 +59,17 @@ def cli_main_options(
         None, "--cluster", help="Run dask operations on this cluster"
     ),
     cluster_options: str = typer.Option("", help="Additional cluster settings"),
-    cluster_workers: int = typer.Option(8, help="spawn N workers"),
+    workers: int = typer.Option(8, help="spawn N workers"),
+    atleast_workers: int = typer.Option(
+        4, help="wait for at least N workers to have spawned"
+    ),
 ):
     if cluster_name is not None:
         import ifremer_clusters
         from distributed import Client
 
         options = dict(item.split("=") for item in cluster_options.split(";") if item)
-        with console.status("[bold blue] Starting cluster", spinner="dots") as status:
+        with console.status("[bold blue] Starting cluster", spinner="point") as status:
             status.update(
                 status=f"[bold blue] Starting cluster:[/] [white]connecting to {cluster_name!r}"
             )
@@ -38,19 +77,20 @@ def cli_main_options(
             console.log("connected to the cluster")
 
             status.update(
-                status="[bold blue] Starting cluster:[/] [white]spawn workers"
-            )
-            cluster.scale(cluster_workers)
-            console.log("workers spawned")
-
-            status.update(
                 status="[bold blue] Starting cluster:[/] [white]creating client"
             )
             client = Client(cluster)
             console.log(f"client: dashboard link: {client.dashboard_link}")
+
+            status.update(
+                status="[bold blue] Starting cluster:[/] [white]spawn workers"
+            )
+            cluster.scale(workers)
+            client.wait_for_workers(n_workers=min(workers, atleast_workers))
+            console.log(f"at least {atleast_workers} workers spawned")
+
             console.log(
-                "cluster: cluster information:",
-                client.get_versions(packages=["dask_jobqueue"]),
+                format_client_versions(client.get_versions()),
             )
 
         console.print(f"[green]cluster {cluster_name} started successfully")
