@@ -54,6 +54,20 @@ def format_client_versions(versions) -> Table:
     return table
 
 
+def glob_url(fs, url, default):
+    if fs.isfile(url):
+        return url
+
+    if has_magic(url):
+        globbed = url
+    # TODO: handle archive urls
+    else:
+        globbed = url.rstrip("/") + "/" + default
+
+    console.log("globbing:", globbed)
+    return [f"{fs.protocol}://{p}" for p in fs.glob(globbed)]
+
+
 @app.callback()
 def cli_main_options(
     cluster_name: str = typer.Option(
@@ -126,19 +140,6 @@ def cli_single_hdf5_to_zarr(
 ):
     """extract the metadata from HDF5 files and write it to separate files"""
     from . import convert
-
-    def glob_url(fs, url, default):
-        if fs.isfile(url):
-            return url
-
-        if has_magic(url):
-            globbed = url
-        # TODO: handle archive urls
-        else:
-            globbed = url.rstrip("/") + "/" + default
-
-        console.log("globbing:", globbed)
-        return [f"{fs.protocol}://{p}" for p in fs.glob(globbed)]
 
     with console.status("[blue bold] extracting metadata", spinner="dots") as status:
         status.update(
