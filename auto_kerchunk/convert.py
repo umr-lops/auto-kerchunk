@@ -1,3 +1,4 @@
+import itertools
 import os
 import pathlib
 
@@ -75,6 +76,43 @@ def compute_outpath(url, outroot, *, relative_to=None, type="json"):
     return url, outroot / relpath.with_name(name)
 
 
+def correct_fill_values(data):
+    def fix_variable(values):
+        zattrs = values[".zattrs"]
+
+        if "_FillValue" not in zattrs:
+            return values
+
+        _FillValue = zattrs["_FillValue"]
+        if values[".zarray"]["fill_value"] != _FillValue:
+            values[".zarray"]["fill_value"] = _FillValue
+
+        return values
+
+    refs = data["refs"]
+    prepared = (
+        (tuple(key.split("/")), value) for key, value in refs.items() if "/" in key
+    )
+    filtered = (
+        (key, ujson.loads(value))
+        for key, value in prepared
+        if key[1] in (".zattrs", ".zarray")
+    )
+    key = lambda i: i[0][0]
+    grouped = (
+        (name, {n[1]: v for n, v in group})
+        for name, group in itertools.groupby(sorted(filtered, key=key), key=key)
+    )
+    fixed = ((name, fix_variable(var)) for name, var in grouped)
+    flattened = {
+        f"{name}/{item}": ujson.dumps(data, indent=4)
+        for name, var in fixed
+        for item, data in var.items()
+    }
+    data["refs"] = dict(sorted((refs | flattened).items()))
+    return data
+
+
 def gen_json_hdf5(fs, url, outpath, **storage_options):
     """extract the metadata of a HDF5 file and save it
 
@@ -93,7 +131,9 @@ def gen_json_hdf5(fs, url, outpath, **storage_options):
 
     with fs.open(url, **so) as inf:
         h5chunks = SingleHdf5ToZarr(inf, url, inline_threshold=300)
-        data = ujson.dumps(h5chunks.translate()).encode()
+        metadata = h5chunks.translate()
+        metadata = correct_fill_values(metadata)
+        bytes_ = ujson.dumps(metadata).encode()
 
     with open(outpath, "wb") as outf:
-        outf.write(data)
+        outf.write(bytes_)
