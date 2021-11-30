@@ -4,14 +4,7 @@ import pathlib
 import ujson
 from kerchunk.hdf import SingleHdf5ToZarr
 
-
-def parse_url(url):
-    pattern = "://"
-    if pattern not in url:
-        return "", url
-
-    scheme, path = url.split(pattern)
-    return scheme, path
+from .utils import parse_url
 
 
 def compute_outpath(url, outroot, *, relative_to=None, type="json"):

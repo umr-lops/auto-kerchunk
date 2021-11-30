@@ -13,6 +13,7 @@ import typer
 from rich.table import Table
 
 from .compression import CompressionAlgorithms
+from .utils import parse_url
 
 app = typer.Typer()
 console = rich.console.Console()
@@ -143,7 +144,7 @@ def cli_single_hdf5_to_zarr(
         status.update(
             "[blue bold] extracting metadata: [/][white]collecting input files"
         )
-        protocols = {convert.parse_url(url)[0] or "file" for url in urls}
+        protocols = {parse_url(url)[0] or "file" for url in urls}
         if len(protocols) != 1:
             console.log("[red bold] reading using multiple protocols is not supported")
             raise SystemExit(1)
