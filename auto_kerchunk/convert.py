@@ -76,19 +76,14 @@ def compute_outpath(url, outroot, *, relative_to=None, type="json"):
     return url, outroot / relpath.with_name(name)
 
 
-def correct_fill_values(data):
-    def fix_variable(values):
-        zattrs = values[".zattrs"]
+def apply_all(variable, funcs):
+    for func in funcs:
+        variable = func(variable)
 
-        if "_FillValue" not in zattrs:
-            return values
+    return variable
 
-        _FillValue = zattrs["_FillValue"]
-        if values[".zarray"]["fill_value"] != _FillValue:
-            values[".zarray"]["fill_value"] = _FillValue
 
-        return values
-
+def postprocess_metadata(data, funcs):
     refs = data["refs"]
     prepared = (
         (tuple(key.split("/")), value) for key, value in refs.items() if "/" in key
@@ -103,7 +98,7 @@ def correct_fill_values(data):
         (name, {n[1]: v for n, v in group})
         for name, group in itertools.groupby(sorted(filtered, key=key), key=key)
     )
-    fixed = ((name, fix_variable(var)) for name, var in grouped)
+    fixed = ((name, apply_all(var, funcs)) for name, var in grouped)
     flattened = {
         f"{name}/{item}": ujson.dumps(data, indent=4)
         for name, var in fixed
@@ -111,6 +106,19 @@ def correct_fill_values(data):
     }
     data["refs"] = dict(sorted((refs | flattened).items()))
     return data
+
+
+def correct_fill_value(var):
+    zattrs = var[".zattrs"]
+
+    if "_FillValue" not in zattrs:
+        return var
+
+    _FillValue = zattrs["_FillValue"]
+    if var[".zarray"]["fill_value"] != _FillValue:
+        var[".zarray"]["fill_value"] = _FillValue
+
+    return var
 
 
 def gen_json_hdf5(fs, url, outpath, **storage_options):
@@ -132,7 +140,7 @@ def gen_json_hdf5(fs, url, outpath, **storage_options):
     with fs.open(url, **so) as inf:
         h5chunks = SingleHdf5ToZarr(inf, url, inline_threshold=300)
         metadata = h5chunks.translate()
-        metadata = correct_fill_values(metadata)
+        metadata = postprocess_metadata(metadata, [correct_fill_value])
         bytes_ = ujson.dumps(metadata).encode()
 
     with open(outpath, "wb") as outf:
