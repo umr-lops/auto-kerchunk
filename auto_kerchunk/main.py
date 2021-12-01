@@ -6,10 +6,10 @@ from glob import has_magic
 from typing import Optional
 
 import dask
-import dask.diagnostics
 import fsspec
 import rich.console
 import typer
+from dask.diagnostics import ProgressBar
 from rich.table import Table
 
 from .compression import CompressionAlgorithms
@@ -80,8 +80,10 @@ def cli_main_options(
     ),
 ):
     if cluster_name is not None:
+        global ProgressBar
         import ifremer_clusters
         from distributed import Client
+        from distributed.diagnostics.progressbar import ProgressBar
 
         options = dict(item.split("=") for item in cluster_options.split(";") if item)
         with console.status("[bold blue] Starting cluster", spinner="point") as status:
@@ -248,7 +250,7 @@ def cli_multi_zarr_to_zarr(
         # TODO: use live-view to use both spinner and progress bar
         status.update("[blue bold] combining metadata: [/][white]executing")
 
-    with dask.diagnostics.ProgressBar():
+    with ProgressBar():
         _ = dask.compute(tasks)
 
     console.print(
