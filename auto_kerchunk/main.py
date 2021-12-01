@@ -171,10 +171,12 @@ def cli_single_hdf5_to_zarr(
         console.log("created output folders")
 
         dsk = [dask.delayed(convert.gen_json_hdf5)(fs, u, p) for u, p in tasks.items()]
-        console.log("done constructing the task graph")
+        console.log("created the task graph: {len(dsk)} items")
+
         status.update("[blue bold] extracting metadata:[/] [white]computing ...")
 
     with dask.diagnostics.ProgressBar():
+        console.log("starting the computation")
         _ = dask.compute(dsk)
 
     console.print("[green bold] metadata extraction successfully completed")
