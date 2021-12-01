@@ -181,17 +181,72 @@ def cli_single_hdf5_to_zarr(
 @app.command("multi-zarr-to-zarr")
 def cli_multi_zarr_to_zarr(
     urls: list[str] = typer.Argument(..., help="input urls / paths"),
-    outpath: pathlib.Path = typer.Argument(..., help="output file"),
-    relative_to: Optional[pathlib.Path] = None,
+    out_url: str = typer.Argument(..., help="output url"),
+    glob: str = typer.Option(
+        "**/*.json", help="pattern to search directories and archives"
+    ),
     compression: Optional[CompressionAlgorithms] = typer.Option(
         None,
-        help="compress the files using this algorithm. Don't compress by default or if an empty string was passed.",
+        help=(
+            "compress the files using this algorithm. Don't compress by"
+            " default or if an empty string was passed."
+        ),
+    ),
+    timestamp_regex: str = typer.Option(
+        r"\d{1,4}[-.]?\d{2}[-.]?\d{2}(T\d{2}:?\d{2}(:?\d{2})?Z?)?",
+        help="regex to extract timestamps from file names",
     ),
     freq: Optional[str] = typer.Option(
         None,
-        help="divide the files into groups (only for files divided by time for now). Can either be the size of the group or a frequency like '6M'.",
+        help=(
+            "divide the files into groups (only for files divided by time for now)."
+            " Can either be the size of the group or a frequency like '6M'."
+        ),
     ),
 ):
     from . import combine
 
-    combine.combine_json(urls, outpath)
+    with console.status("[blue bold] combining metadata", spinner="dots") as status:
+        status.update(
+            "[blue bold] combining metadata: [/][white]collecting input files"
+        )
+        protocols = {parse_url(url)[0] or "file" for url in urls}
+        if len(protocols) != 1:
+            console.log("[red bold] reading using multiple protocols is not supported")
+            raise SystemExit(1)
+        (protocol,) = protocols
+        fs = fsspec.filesystem(protocol)
+        all_urls = sorted(
+            itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
+        )
+        console.log(f"collected {len(all_urls)} files")
+        status.update("[blue bold] combining metadata:[/] [white]preparing tasks")
+        if freq:
+            groups = {
+                combine.compute_url(out_url, f"{name}.json"): data
+                for name, data in combine.group_urls(all_urls, timestamp_regex, freq)
+            }
+        else:
+            groups = {out_url: all_urls}
+        console.log(f"determined {len(groups)} groups")
+
+        scheme, _ = parse_url(out_url)
+        fs = fsspec.filesystem(scheme)
+        for url in groups.keys():
+            scheme, path = parse_url(url)
+            fs.makedirs(f"{scheme}://{pathlib.Path(path).parent}", exist_ok=True)
+        console.log("created out directories")
+        console.log(groups)
+        tasks = [
+            dask.delayed(combine.combine_json)(urls, out, compression=compression)
+            for out, urls in groups.items()
+        ]
+        console.log("created tasks")
+        # TODO: use live-view to use both spinner and progress bar
+        status.update("[blue bold] combining metadata: [/][white]executing")
+        with dask.diagnostics.ProgressBar():
+            _ = dask.compute(tasks)
+        # combine.combine_json(urls, outpath)
+        console.print(
+            f"[green bold]combined {len(all_urls)} metadata files to {len(groups)} files"
+        )
