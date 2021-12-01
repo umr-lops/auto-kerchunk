@@ -162,6 +162,7 @@ def cli_single_hdf5_to_zarr(
         status.update(
             "[blue bold] extracting metadata:[/] [white]preparing computation"
         )
+        console.log(f"output files are to be written to: {root}")
         tasks = dict(
             convert.compute_outpath(u, root, relative_to=relative_to) for u in all_urls
         )
