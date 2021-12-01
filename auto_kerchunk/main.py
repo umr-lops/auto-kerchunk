@@ -175,6 +175,7 @@ def cli_single_hdf5_to_zarr(
 
         status.update("[blue bold] extracting metadata:[/] [white]computing ...")
 
+    raise SystemExit("done")
     with dask.diagnostics.ProgressBar():
         console.log("starting the computation")
         _ = dask.compute(dsk)
