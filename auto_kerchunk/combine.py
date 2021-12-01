@@ -2,9 +2,8 @@ import itertools
 import re
 
 import blosc
+import ujson
 from kerchunk.combine import MultiZarrToZarr
-
-from .utils import parse_url
 
 
 def extract_timestamp(url, regex):
@@ -69,10 +68,10 @@ def group_urls(urls, timestamp_regex, frequency):
     return groups
 
 
-def compute_url(url, name):
-    """compute the output url of a group from a url and group data"""
-    scheme, path = parse_url(url)
-    return f"{scheme}://{path.rstrip('/')}/{name}"
+def load_json(fs, url, **so):
+    so = {"mode": "rb"} | so
+    with fs.open(url, **so) as f:
+        return ujson.load(f)
 
 
 def combine_json(paths, outpath, compression=None):
@@ -102,3 +101,5 @@ def combine_json(paths, outpath, compression=None):
     if compression is not None:
         data = outpath.read_bytes()
         outpath.write_bytes(blosc.compress(data, typesize=8, cname=str(compression)))
+
+    return outpath

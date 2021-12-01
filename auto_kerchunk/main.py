@@ -181,7 +181,7 @@ def cli_single_hdf5_to_zarr(
 @app.command("multi-zarr-to-zarr")
 def cli_multi_zarr_to_zarr(
     urls: list[str] = typer.Argument(..., help="input urls / paths"),
-    out_url: str = typer.Argument(..., help="output url"),
+    outpath: pathlib.Path = typer.Argument(..., help="output path / root"),
     glob: str = typer.Option(
         "**/*.json", help="pattern to search directories and archives"
     ),
@@ -220,33 +220,37 @@ def cli_multi_zarr_to_zarr(
             itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
         )
         console.log(f"collected {len(all_urls)} files")
+
         status.update("[blue bold] combining metadata:[/] [white]preparing tasks")
+        outpath = outpath.absolute()
         if freq:
             groups = {
-                combine.compute_url(out_url, f"{name}.json"): data
+                outpath.joinpath(f"{name}.json"): data
                 for name, data in combine.group_urls(all_urls, timestamp_regex, freq)
             }
         else:
-            groups = {out_url: all_urls}
+            groups = {outpath: all_urls}
         console.log(f"determined {len(groups)} groups")
 
-        scheme, _ = parse_url(out_url)
-        fs = fsspec.filesystem(scheme)
-        for url in groups.keys():
-            scheme, path = parse_url(url)
-            fs.makedirs(f"{scheme}://{pathlib.Path(path).parent}", exist_ok=True)
+        for path in {p.parent for p in groups.keys()}:
+            path.mkdir(exist_ok=True, parents=True)
         console.log("created out directories")
-        console.log(groups)
-        tasks = [
-            dask.delayed(combine.combine_json)(urls, out, compression=compression)
+
+        preopened_files = {
+            out: [dask.delayed(combine.load_json)(fs, url) for url in urls]
             for out, urls in groups.items()
+        }
+        tasks = [
+            dask.delayed(combine.combine_json)(data, out, compression=compression)
+            for out, data in preopened_files.items()
         ]
         console.log("created tasks")
         # TODO: use live-view to use both spinner and progress bar
         status.update("[blue bold] combining metadata: [/][white]executing")
-        with dask.diagnostics.ProgressBar():
-            _ = dask.compute(tasks)
-        # combine.combine_json(urls, outpath)
-        console.print(
-            f"[green bold]combined {len(all_urls)} metadata files to {len(groups)} files"
-        )
+
+    with dask.diagnostics.ProgressBar():
+        _ = dask.compute(tasks)
+
+    console.print(
+        f"[green bold]combined {len(all_urls)} metadata files to {len(groups)} files"
+    )
