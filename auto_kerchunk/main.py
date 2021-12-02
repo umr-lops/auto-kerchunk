@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import itertools
 import pathlib
 from glob import has_magic
@@ -173,9 +174,8 @@ def cli_single_hdf5_to_zarr(
             parent.mkdir(exist_ok=True, parents=True)
         console.log("created output folders")
 
-        dsk = db.from_delayed(
-            [dask.delayed(convert.gen_json_hdf5)(fs, u, p) for u, p in tasks.items()]
-        )
+        data = db.from_sequence(tasks.items())
+        dsk = data.starmap(functools.partial(convert.gen_json_hdf5, fs))
         console.log("created the task graph")
 
         status.update("[blue bold] extracting metadata:[/] [white]computing ...")

@@ -145,3 +145,5 @@ def gen_json_hdf5(fs, url, outpath, **storage_options):
 
     with open(outpath, "wb") as outf:
         outf.write(bytes_)
+
+    return outpath
