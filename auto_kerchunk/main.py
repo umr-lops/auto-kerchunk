@@ -176,7 +176,7 @@ def cli_single_hdf5_to_zarr(
         dsk = db.from_delayed(
             [dask.delayed(convert.gen_json_hdf5)(fs, u, p) for u, p in tasks.items()]
         )
-        console.log(f"created the task graph: {len(dsk)} items")
+        console.log("created the task graph")
 
         status.update("[blue bold] extracting metadata:[/] [white]computing ...")
 
