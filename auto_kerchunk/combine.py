@@ -1,7 +1,8 @@
 import itertools
 import re
 
-import blosc
+import fsspec.compression
+import fsspec.utils
 import ujson
 from kerchunk.combine import MultiZarrToZarr
 
@@ -74,7 +75,25 @@ def load_json(fs, url, **so):
         return ujson.load(f)
 
 
+def infer_compression_extension(compression):
+    compressions = {name: ext for ext, name in fsspec.utils.compressions.items()}
+
+    ext = compressions.get(compression)
+    if ext and isinstance(ext, list):
+        return ext[0]
+
+    return ext
+
+
 def combine_json(paths, outpath, compression=None):
+    if compression == "none":
+        compression = None
+
+    if compression:
+        ext = infer_compression_extension(compression)
+        if ext and not outpath.suffix.endswith(ext):
+            outpath = outpath.with_suffix(f"{outpath.suffix}.{ext}")
+
     mzz = MultiZarrToZarr(
         paths,
         remote_protocol="file",
@@ -100,6 +119,9 @@ def combine_json(paths, outpath, compression=None):
 
     if compression is not None:
         data = outpath.read_bytes()
-        outpath.write_bytes(blosc.compress(data, typesize=8, cname=str(compression)))
+        compress = fsspec.compression.compr[compression]
+        with open(outpath, mode="wb") as f:
+            f = compress(f, mode="wb")
+            f.write(data)
 
     return outpath

@@ -1,8 +1,8 @@
 import enum
+import operator
 
-import blosc
+import fsspec.compression
 
-CompressionAlgorithms = enum.Enum(
-    "CompressionAlgorithms", {name: name for name in blosc.cnames}
-)
-CompressionAlgorithms.__str__ = lambda self: self.name
+names = [str(n).lower() for n in fsspec.compression.compr.keys()]
+CompressionAlgorithms = enum.Enum("CompressionAlgorithms", {n: n for n in names})
+CompressionAlgorithms.__str__ = operator.attrgetter("name")
