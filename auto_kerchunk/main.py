@@ -140,6 +140,10 @@ def cli_single_hdf5_to_zarr(
         "**/*.nc",
         help=("search directories using this glob"),
     ),
+    chunksize: int = typer.Option(
+        100,
+        help="dask chunk size",
+    ),
 ):
     """extract the metadata from HDF5 files and write it to separate files"""
     import dask.bag as db
@@ -174,7 +178,7 @@ def cli_single_hdf5_to_zarr(
             parent.mkdir(exist_ok=True, parents=True)
         console.log("created output folders")
 
-        data = db.from_sequence(tasks.items(), partition_size=500)
+        data = db.from_sequence(tasks.items(), partition_size=chunksize)
         dsk = data.starmap(functools.partial(convert.gen_json_hdf5, fs))
         console.log("created the task graph")
 
