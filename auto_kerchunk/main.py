@@ -254,7 +254,7 @@ def cli_multi_zarr_to_zarr(
             for out, urls in groups.items()
         }
         tasks = [
-            dask.delayed(combine.combine_json)(data, out, compression=compression)
+            dask.delayed(combine.combine_json)(data, out, compression=str(compression))
             for out, data in preopened_files.items()
         ]
         console.log("created tasks")
