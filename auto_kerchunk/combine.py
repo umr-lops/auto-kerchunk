@@ -89,11 +89,6 @@ def combine_json(paths, outpath, compression=None):
     if compression == "none":
         compression = None
 
-    if compression:
-        ext = infer_compression_extension(compression)
-        if ext and not outpath.suffix.endswith(ext):
-            outpath = outpath.with_suffix(f"{outpath.suffix}.{ext}")
-
     mzz = MultiZarrToZarr(
         paths,
         remote_protocol="file",
@@ -119,9 +114,16 @@ def combine_json(paths, outpath, compression=None):
 
     if compression is not None:
         data = outpath.read_bytes()
+
+        ext = infer_compression_extension(compression)
+        compressed_outpath = outpath.with_suffix(f"{outpath.suffix}.{ext}")
         compress = fsspec.compression.compr[compression]
-        with open(outpath, mode="wb") as f:
+        with open(compressed_outpath, mode="wb") as f:
             f = compress(f, mode="wb")
             f.write(data)
+
+        outpath.unlink()
+
+        return compressed_outpath
 
     return outpath
