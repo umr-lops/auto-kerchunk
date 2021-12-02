@@ -141,6 +141,8 @@ def cli_single_hdf5_to_zarr(
     ),
 ):
     """extract the metadata from HDF5 files and write it to separate files"""
+    import dask.bag as db
+
     from . import convert
 
     with console.status("[blue bold] extracting metadata", spinner="dots") as status:
@@ -171,7 +173,9 @@ def cli_single_hdf5_to_zarr(
             parent.mkdir(exist_ok=True, parents=True)
         console.log("created output folders")
 
-        dsk = [dask.delayed(convert.gen_json_hdf5)(fs, u, p) for u, p in tasks.items()]
+        dsk = db.from_delayed(
+            [dask.delayed(convert.gen_json_hdf5)(fs, u, p) for u, p in tasks.items()]
+        )
         console.log(f"created the task graph: {len(dsk)} items")
 
         status.update("[blue bold] extracting metadata:[/] [white]computing ...")
