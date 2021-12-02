@@ -84,7 +84,6 @@ def cli_main_options(
         global ProgressBar
         import ifremer_clusters
         from distributed import Client
-        from distributed.diagnostics.progressbar import ProgressBar
 
         options = dict(item.split("=") for item in cluster_options.split(";") if item)
         with console.status("[bold blue] Starting cluster", spinner="point") as status:
