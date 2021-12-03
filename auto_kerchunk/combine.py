@@ -117,12 +117,10 @@ def combine_json(paths, outpath, compression=None):
     if compression is not None:
         ext = infer_compression_extension(compression)
         outpath = outpath.with_suffix(f"{outpath.suffix}.{ext}")
-        compress = fsspec.compression.compr[compression]
-        open_ = lambda p, mode: compress(open(p, mode=mode), mode=mode)
-    else:
-        open_ = open
 
-    with open_(outpath, mode="wb") as f:
+    url = f"file://{outpath.absolute()}"
+
+    with fsspec.open(url, mode="wb", compression=compression) as f:
         f.write(data)
 
     return outpath
