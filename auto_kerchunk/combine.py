@@ -110,20 +110,17 @@ def combine_json(paths, outpath, compression=None):
         },
     )
     # no templates because that is way too slow for a lot of files
-    mzz.translate(outpath, template_count=None)
+    data = ujson.dumps(mzz.translate(template_count=None)).encode()
 
     if compression is not None:
-        data = outpath.read_bytes()
-
         ext = infer_compression_extension(compression)
-        compressed_outpath = outpath.with_suffix(f"{outpath.suffix}.{ext}")
+        outpath = outpath.with_suffix(f"{outpath.suffix}.{ext}")
         compress = fsspec.compression.compr[compression]
-        with open(compressed_outpath, mode="wb") as f:
-            f = compress(f, mode="wb")
-            f.write(data)
+        open_ = lambda p, mode: compress(open(p, mode=mode), mode=mode)
+    else:
+        open_ = open
 
-        outpath.unlink()
-
-        return compressed_outpath
+    with open_(outpath, mode="wb") as f:
+        f.write(data)
 
     return outpath
