@@ -86,8 +86,10 @@ def infer_compression_extension(compression):
 
 
 def combine_json(paths, outpath, compression=None):
-    if compression == "none":
-        compression = None
+    if compression is not None:
+        compression = str(compression)
+        if compression == "none":
+            compression = None
 
     mzz = MultiZarrToZarr(
         paths,
