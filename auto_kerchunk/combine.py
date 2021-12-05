@@ -116,7 +116,8 @@ def combine_json(paths, outpath, compression=None):
 
     if compression is not None:
         ext = infer_compression_extension(compression)
-        outpath = outpath.with_suffix(f"{outpath.suffix}.{ext}")
+        if not outpath.suffix.endswith(ext):
+            outpath = outpath.with_suffix(f"{outpath.suffix}.{ext}")
 
     url = f"file://{outpath.absolute()}"
 
