@@ -266,3 +266,33 @@ def cli_multi_zarr_to_zarr(
     console.print(
         f"[green bold]combined {len(all_urls)} metadata files to {len(groups)} files"
     )
+
+
+@app.command("create-intake")
+def cli_create_intake(
+    url: str = typer.Argument(..., help="the url to the kerchunk metadata file"),
+    out: str = typer.Argument(..., help="the url to the catalog"),
+    catalog_name: str = typer.Option("catalog", help="name of the catalog"),
+    catalog_description: str = typer.Option(None, help="description of the catalog"),
+    name: str = typer.Option("source", help="the name of the catalog entry"),
+    description: str = typer.Option(
+        "description", help="description of the catalog entry"
+    ),
+):
+    """create a intake catalog for a kerchunk metadata file
+
+    See `single-hdf5-to-zarr` and `multi-zarr-to-zarr`.
+    """
+    from .intake import Catalog, create_catalog_entry
+
+    console.log("creating intake catalog for kerchunk metadata file at:", url)
+    entry = create_catalog_entry(name, description, url)
+    console.log("entry:", entry, sep="\n    ")
+
+    catalog = Catalog.from_dict(
+        name=catalog_name, description=catalog_description, entries={name: entry}
+    )
+    console.log("catalog:", catalog, sep="\n    ")
+
+    catalog.save(out)
+    console.log("saved catalog to:", out)
