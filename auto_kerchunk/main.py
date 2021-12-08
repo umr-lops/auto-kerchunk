@@ -271,7 +271,7 @@ def cli_multi_zarr_to_zarr(
 @app.command("create-intake")
 def cli_create_intake(
     url: str = typer.Argument(..., help="the url to the kerchunk metadata file"),
-    out: str = typer.Argument(..., help="the url to the catalog"),
+    out: str = typer.Argument(..., help="the url to the catalog file"),
     catalog_name: str = typer.Option("catalog", help="name of the catalog"),
     catalog_description: str = typer.Option(None, help="description of the catalog"),
     name: str = typer.Option("source", help="the name of the catalog entry"),
