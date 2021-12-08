@@ -216,6 +216,7 @@ def cli_multi_zarr_to_zarr(
         ),
     ),
 ):
+    """combine the metadata of netcdf files into a single file"""
     from . import combine
 
     with console.status("[blue bold] combining metadata", spinner="dots") as status:
