@@ -22,6 +22,7 @@ def create_catalog_entry(name, description, url, storage_options={}):
         args={
             "urlpath": "reference://",
             "storage_options": storage_options,
+            "consolidated": False,
         },
     )
     return entry
