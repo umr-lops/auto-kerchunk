@@ -287,12 +287,11 @@ def cli_create_intake(
 
     console.log("creating intake catalog for kerchunk metadata file at:", url)
     entry = create_catalog_entry(name, description, url)
-    console.log("entry:", entry, sep="\n    ")
 
     catalog = Catalog.from_dict(
         name=catalog_name, description=catalog_description, entries={name: entry}
     )
-    console.log("catalog:", catalog, sep="\n    ")
 
     catalog.save(out)
     console.log("saved catalog to:", out)
+    console.print("[green bold]successfully created the catalog[/]")
