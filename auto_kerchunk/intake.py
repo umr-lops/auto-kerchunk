@@ -2,7 +2,7 @@ from intake.catalog import Catalog  # noqa: F401
 from intake.catalog.local import LocalCatalogEntry
 
 
-def create_catalog_entry(name, description, url, storage_options={}):
+def create_catalog_entry(name, description, url):
     """create a catalog entry
 
     Parameters
@@ -14,7 +14,16 @@ def create_catalog_entry(name, description, url, storage_options={}):
     url : str
         url to the kerchunk metadata file
     """
-    storage_options = {"fo": url} | storage_options
+    target_protocol = "file"  # hard-coded for now, extract in the future
+    # hard-coded for now, try to detect using the filename
+    compression = "zstd" if url.endswith(".zst") else None
+    storage_options = {
+        "fo": url,
+        "target_protocol": target_protocol,
+        "target_options": {
+            "compression": compression,
+        },
+    }
     entry = LocalCatalogEntry(
         name=name,
         description=description,
