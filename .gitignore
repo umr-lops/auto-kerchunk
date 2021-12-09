@@ -8,3 +8,7 @@ __pycache__/
 
 # jupyter checkpoints
 .ipynb_checkpoints/
+
+# dask
+dask-worker-space/
+dask-worker.*
