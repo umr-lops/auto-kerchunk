@@ -251,6 +251,10 @@ def cli_multi_zarr_to_zarr(
         all_urls = sorted(
             itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
         )
+
+        if not len(all_urls):
+            console.log("[red bold] could not find any files. Try setting `--glob`")
+            raise SystemExit(1)
         console.log(f"collected {len(all_urls)} files")
 
         status.update("[blue bold] combining metadata:[/] [white]preparing tasks")
