@@ -85,31 +85,41 @@ def infer_compression_extension(compression):
     return ext
 
 
-def combine_json(paths, outpath, compression=None):
+def combine_json(
+    paths,
+    outpath,
+    remote_protocol,
+    *,
+    compression=None,
+    open_kwargs={},
+    concat_kwargs={},
+):
     if compression is not None:
         compression = str(compression)
         if compression == "none":
             compression = None
 
+    xarray_open_kwargs = {
+        "decode_cf": False,
+        "mask_and_scale": False,
+        "decode_times": False,
+        "decode_timedelta": False,
+        "use_cftime": False,
+        "decode_coords": False,
+    }
+    xarray_concat_kwargs = {
+        "combine_attrs": "drop_conflicts",
+        "data_vars": "minimal",
+        "coords": "minimal",
+        "compat": "override",
+        "dim": "time",
+    }
+
     mzz = MultiZarrToZarr(
         paths,
-        remote_protocol="file",
-        xarray_open_kwargs={
-            "decode_cf": False,
-            "mask_and_scale": False,
-            "decode_times": False,
-            "decode_timedelta": False,
-            "use_cftime": False,
-            "decode_coords": False,
-        },
-        xarray_concat_args={
-            "combine_attrs": "drop_conflicts",
-            "data_vars": "minimal",
-            "coords": "minimal",
-            "compat": "override",
-            # "concat_dim": "time",
-            "dim": "time",
-        },
+        remote_protocol=remote_protocol,
+        xarray_open_kwargs=xarray_open_kwargs | open_kwargs,
+        xarray_concat_args=xarray_concat_kwargs | concat_kwargs,
     )
     # no templates because that is way too slow for a lot of files
     data = ujson.dumps(mzz.translate(template_count=None)).encode()
