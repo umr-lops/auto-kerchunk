@@ -163,6 +163,10 @@ def cli_single_hdf5_to_zarr(
         all_urls = list(
             itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
         )
+
+        if len(protocols) != 1:
+            console.log("[red bold] reading using multiple protocols is not supported")
+            raise SystemExit(1)
         console.log(f"collected {len(all_urls)} input files")
 
         status.update(
