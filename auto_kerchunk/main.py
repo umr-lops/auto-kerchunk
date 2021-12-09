@@ -318,11 +318,9 @@ def cli_create_intake(
 
     See `single-hdf5-to-zarr` and `multi-zarr-to-zarr`.
     """
-    from fsspec.core import url_to_fs
-
     from .intake import Catalog, create_catalog_entry
 
-    fs = url_to_fs(url)
+    fs, _, _ = fsspec.get_fs_token_paths(url)
     if not fs.exists(url):
         console.log("[bold red]file does not exist:[/]", url)
         raise SystemExit(1)
