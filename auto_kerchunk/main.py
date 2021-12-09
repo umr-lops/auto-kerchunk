@@ -194,6 +194,23 @@ def cli_single_hdf5_to_zarr(
 def cli_multi_zarr_to_zarr(
     urls: list[str] = typer.Argument(..., help="input urls / paths"),
     outpath: pathlib.Path = typer.Argument(..., help="output path / root"),
+    remote_protocol: str = typer.Option(
+        "file", help="The protocol used to access the data"
+    ),
+    open_kwargs: str = typer.Option(
+        "",
+        help=(
+            "options to pass to `xarray.open_dataset`. Separate keys from"
+            " values by '=' and entries by ';'"
+        ),
+    ),
+    concat_kwargs: str = typer.Option(
+        "",
+        help=(
+            "options to pass to `xarray.concat`. Separate keys from"
+            " values by '=' and entries by ';'"
+        ),
+    ),
     glob: str = typer.Option(
         "**/*.json", help="pattern to search directories and archives"
     ),
@@ -217,6 +234,9 @@ def cli_multi_zarr_to_zarr(
     ),
 ):
     from . import combine
+
+    open_kwargs = parse_dict_option(open_kwargs)
+    concat_kwargs = parse_dict_option(concat_kwargs)
 
     with console.status("[blue bold] combining metadata", spinner="dots") as status:
         status.update(
@@ -253,7 +273,14 @@ def cli_multi_zarr_to_zarr(
             for out, urls in groups.items()
         }
         tasks = [
-            dask.delayed(combine.combine_json)(data, out, compression=compression)
+            dask.delayed(combine.combine_json)(
+                data,
+                out,
+                compression=compression,
+                remote_protocol=remote_protocol,
+                open_kwargs=open_kwargs,
+                concat_kwargs=concat_kwargs,
+            )
             for out, data in preopened_files.items()
         ]
         console.log("created tasks")
