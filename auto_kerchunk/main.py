@@ -163,6 +163,10 @@ def cli_single_hdf5_to_zarr(
         all_urls = list(
             itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
         )
+
+        if not len(all_urls):
+            console.log("[red bold] no files found. Try setting `--glob`")
+            raise SystemExit(1)
         console.log(f"collected {len(all_urls)} input files")
 
         status.update(
@@ -251,6 +255,10 @@ def cli_multi_zarr_to_zarr(
         all_urls = sorted(
             itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
         )
+
+        if not len(all_urls):
+            console.log("[red bold] no files found. Try setting `--glob`")
+            raise SystemExit(1)
         console.log(f"collected {len(all_urls)} files")
 
         status.update("[blue bold] combining metadata:[/] [white]preparing tasks")
@@ -311,6 +319,11 @@ def cli_create_intake(
     See `single-hdf5-to-zarr` and `multi-zarr-to-zarr`.
     """
     from .intake import Catalog, create_catalog_entry
+
+    fs, _, _ = fsspec.get_fs_token_paths(url)
+    if not fs.exists(url):
+        console.log("[bold red]file does not exist:[/]", url)
+        raise SystemExit(1)
 
     console.log("creating intake catalog for kerchunk metadata file at:", url)
     entry = create_catalog_entry(name, description, url)

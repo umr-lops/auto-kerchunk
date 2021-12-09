@@ -8,4 +8,6 @@ def parse_url(url):
 
 
 def parse_dict_option(option):
+    if not option:
+        return {}
     return dict(item.split("=") for item in option.split(";"))
