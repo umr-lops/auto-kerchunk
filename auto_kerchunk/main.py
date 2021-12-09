@@ -14,7 +14,7 @@ from dask.diagnostics import ProgressBar
 from rich.table import Table
 
 from .compression import CompressionAlgorithms
-from .utils import parse_url
+from .utils import parse_dict_option, parse_url
 
 app = typer.Typer()
 console = rich.console.Console()
@@ -85,7 +85,7 @@ def cli_main_options(
         import ifremer_clusters
         from distributed import Client
 
-        options = dict(item.split("=") for item in cluster_options.split(";") if item)
+        options = parse_dict_option(cluster_options)
         with console.status("[bold blue] Starting cluster", spinner="point") as status:
             status.update(
                 status=f"[bold blue] Starting cluster:[/] [white]connecting to {cluster_name!r}"

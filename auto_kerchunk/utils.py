@@ -5,3 +5,7 @@ def parse_url(url):
 
     scheme, path = url.split(pattern)
     return scheme, path
+
+
+def parse_dict_option(option):
+    return dict(item.split("=") for item in option.split(";"))
