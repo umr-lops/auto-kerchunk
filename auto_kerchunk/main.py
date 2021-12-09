@@ -164,8 +164,8 @@ def cli_single_hdf5_to_zarr(
             itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
         )
 
-        if len(protocols) != 1:
-            console.log("[red bold] reading using multiple protocols is not supported")
+        if not len(all_urls):
+            console.log("[red bold] no files found. Try setting `--glob`")
             raise SystemExit(1)
         console.log(f"collected {len(all_urls)} input files")
 
@@ -257,7 +257,7 @@ def cli_multi_zarr_to_zarr(
         )
 
         if not len(all_urls):
-            console.log("[red bold] could not find any files. Try setting `--glob`")
+            console.log("[red bold] no files found. Try setting `--glob`")
             raise SystemExit(1)
         console.log(f"collected {len(all_urls)} files")
 
