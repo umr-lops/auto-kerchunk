@@ -14,7 +14,7 @@ from dask.diagnostics import ProgressBar
 from rich.table import Table
 
 from .compression import CompressionAlgorithms
-from .utils import parse_url
+from .utils import parse_dict_option, parse_url
 
 app = typer.Typer()
 console = rich.console.Console()
@@ -85,7 +85,7 @@ def cli_main_options(
         import ifremer_clusters
         from distributed import Client
 
-        options = dict(item.split("=") for item in cluster_options.split(";") if item)
+        options = parse_dict_option(cluster_options)
         with console.status("[bold blue] Starting cluster", spinner="point") as status:
             status.update(
                 status=f"[bold blue] Starting cluster:[/] [white]connecting to {cluster_name!r}"
@@ -163,6 +163,10 @@ def cli_single_hdf5_to_zarr(
         all_urls = list(
             itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
         )
+
+        if not len(all_urls):
+            console.log("[red bold] no files found. Try setting `--glob`")
+            raise SystemExit(1)
         console.log(f"collected {len(all_urls)} input files")
 
         status.update(
@@ -194,6 +198,23 @@ def cli_single_hdf5_to_zarr(
 def cli_multi_zarr_to_zarr(
     urls: list[str] = typer.Argument(..., help="input urls / paths"),
     outpath: pathlib.Path = typer.Argument(..., help="output path / root"),
+    remote_protocol: str = typer.Option(
+        "file", help="The protocol used to access the data"
+    ),
+    open_kwargs: str = typer.Option(
+        "",
+        help=(
+            "options to pass to `xarray.open_dataset`. Separate keys from"
+            " values by '=' and entries by ';'"
+        ),
+    ),
+    concat_kwargs: str = typer.Option(
+        "",
+        help=(
+            "options to pass to `xarray.concat`. Separate keys from"
+            " values by '=' and entries by ';'"
+        ),
+    ),
     glob: str = typer.Option(
         "**/*.json", help="pattern to search directories and archives"
     ),
@@ -219,6 +240,9 @@ def cli_multi_zarr_to_zarr(
     """combine the metadata of netcdf files into a single file"""
     from . import combine
 
+    open_kwargs = parse_dict_option(open_kwargs)
+    concat_kwargs = parse_dict_option(concat_kwargs)
+
     with console.status("[blue bold] combining metadata", spinner="dots") as status:
         status.update(
             "[blue bold] combining metadata: [/][white]collecting input files"
@@ -232,6 +256,10 @@ def cli_multi_zarr_to_zarr(
         all_urls = sorted(
             itertools.chain.from_iterable(glob_url(fs, url, glob) for url in urls)
         )
+
+        if not len(all_urls):
+            console.log("[red bold] no files found. Try setting `--glob`")
+            raise SystemExit(1)
         console.log(f"collected {len(all_urls)} files")
 
         status.update("[blue bold] combining metadata:[/] [white]preparing tasks")
@@ -254,7 +282,14 @@ def cli_multi_zarr_to_zarr(
             for out, urls in groups.items()
         }
         tasks = [
-            dask.delayed(combine.combine_json)(data, out, compression=compression)
+            dask.delayed(combine.combine_json)(
+                data,
+                out,
+                compression=compression,
+                remote_protocol=remote_protocol,
+                open_kwargs=open_kwargs,
+                concat_kwargs=concat_kwargs,
+            )
             for out, data in preopened_files.items()
         ]
         console.log("created tasks")
@@ -267,3 +302,37 @@ def cli_multi_zarr_to_zarr(
     console.print(
         f"[green bold]combined {len(all_urls)} metadata files to {len(groups)} files"
     )
+
+
+@app.command("create-intake")
+def cli_create_intake(
+    url: str = typer.Argument(..., help="the url to the kerchunk metadata file"),
+    out: str = typer.Argument(..., help="the url to the catalog file"),
+    catalog_name: str = typer.Option("catalog", help="name of the catalog"),
+    catalog_description: str = typer.Option(None, help="description of the catalog"),
+    name: str = typer.Option("source", help="the name of the catalog entry"),
+    description: str = typer.Option(
+        "description", help="description of the catalog entry"
+    ),
+):
+    """create a intake catalog for a kerchunk metadata file
+
+    See `single-hdf5-to-zarr` and `multi-zarr-to-zarr`.
+    """
+    from .intake import Catalog, create_catalog_entry
+
+    fs, _, _ = fsspec.get_fs_token_paths(url)
+    if not fs.exists(url):
+        console.log("[bold red]file does not exist:[/]", url)
+        raise SystemExit(1)
+
+    console.log("creating intake catalog for kerchunk metadata file at:", url)
+    entry = create_catalog_entry(name, description, url)
+
+    catalog = Catalog.from_dict(
+        name=catalog_name, description=catalog_description, entries={name: entry}
+    )
+
+    catalog.save(out)
+    console.log("saved catalog to:", out)
+    console.print("[green bold]successfully created the catalog[/]")
