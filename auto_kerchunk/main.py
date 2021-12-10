@@ -237,6 +237,7 @@ def cli_multi_zarr_to_zarr(
         ),
     ),
 ):
+    """combine the metadata of netcdf files into a single file"""
     from . import combine
 
     open_kwargs = parse_dict_option(open_kwargs)
