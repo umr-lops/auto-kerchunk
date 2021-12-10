@@ -10,6 +10,7 @@ which conda
 conda activate kerchunk2
 
 cd $TMPDIR
+# add single zarr, create tmp files at $TMPDIR/TMP
 
 date
 python -m auto_kerchunk  --cluster local --workers 14  multi-zarr-to-zarr /home/datawork-lops-iaocea/catalog/f2_1200_sn/*json /home/datawork-lops-iaocea/catalog/f2_1200_sn
