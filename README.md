@@ -19,3 +19,4 @@ optional dependencies:
 - ifremer-clusters
 - distributed
 - intake
+- intake-xarray
