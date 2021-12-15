@@ -58,11 +58,11 @@ It is better if you can observe how your computation is going on with dask.  Thu
 
 ```bash
 cd $TMPDIR
-(/home1/datahome/todaka/conda-env/auto-kerchunk) todaka@r2i0n15:/dev/shm/pbs.8216049.datarmor0> python -m auto_kerchunk  --cluster local --workers 14 single-hdf5-to-zarr /home/ref-marc/f2_1200_sn/best_estimate/ --glob "**/*Z.nc" $TMPDIR/f2_1200_sn/
+python -m auto_kerchunk  --cluster local --workers 14 single-hdf5-to-zarr /home/ref-marc/f2_1200_sn/best_estimate/ --glob "**/*Z.nc" $TMPDIR/f2_1200_sn/
 ```
 
 ```bash
-(/home1/datahome/todaka/conda-env/auto-kerchunk) todaka@r2i0n15:/dev/shm/pbs.8216049.datarmor0> python -m auto_kerchunk  --cluster local --workers 14  multi-zarr-to-zarr $TMPDIR/f2_1200_sn/ /home/datawork-lops-iaocea/catalog/f2_1200_sn
+python -m auto_kerchunk  --cluster local --workers 14  multi-zarr-to-zarr $TMPDIR/f2_1200_sn/ /home/datawork-lops-iaocea/catalog/f2_1200_sn
 ```
 => taking long time here
 
