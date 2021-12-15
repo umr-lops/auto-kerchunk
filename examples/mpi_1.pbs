@@ -1,0 +1,17 @@
+#!/bin/bash
+#PBS -q mpi_1
+#PBS -l walltime=24:00:00
+#mamba create -n kerchunk2 python==3.9
+#conda activate kerchunk2
+#python -m pip install .
+
+source .bashrc
+which conda
+conda activate kerchunk2
+
+cd $TMPDIR
+# add single zarr, create tmp files at $TMPDIR/TMP
+
+date
+python -m auto_kerchunk  --cluster local --workers 14  multi-zarr-to-zarr /home/datawork-lops-iaocea/catalog/f2_1200_sn/*json /home/datawork-lops-iaocea/catalog/f2_1200_sn
+date

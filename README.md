@@ -19,6 +19,8 @@ optional dependencies:
 - ifremer-clusters
 - distributed
 - intake
+- intake-xarray
+
 
 
 #  How to install
@@ -81,6 +83,7 @@ python -m auto_kerchunk   --workers 14  single-hdf5-to-zarr $FILES $TMP
 python -m auto_kerchunk   --workers 14  multi-zarr-to-zarr --compression zstd "file://$TMP/*.json" $RESULT
 python -m auto_kerchunk   create-intake --catalog-name $CATALOGNAME --name  $NAME "file://$RESULT" $INTAKE
 ```
+
 
 
 
