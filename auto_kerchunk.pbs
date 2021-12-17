@@ -1,0 +1,48 @@
+#!/bin/bash
+#PBS -q mpi_1
+#PBS -l walltime=24:00:00
+#PBS -m e
+#mamba create -n auto-kerchunk python==3.9 xarray kerchunk ujson h5py zarr  fsspec  dask rich  typer zstandard intake intake-xarray
+#conda activate auto-kerchunk
+#python -m pip install .
+
+source .bashrc
+which conda
+conda activate auto-kerchunk
+
+# add single zarr, create tmp files at $TMPDIR/TMP
+#TMPDIR=/dev/shm/pbs.8265504.datarmor0
+
+# Here, update the FILES and NAME
+FILES="file:///home/ref-marc/f1_e2500/best_estimate/2015/*_20150101T*Z.nc"
+FILES="file:///home/ref-marc/f1_e2500/best_estimate/*/*Z.nc"
+FILES="file:///home/ref-oc-intranet-restricted/modeles_mf/arpege_hr/best_estimate/*/*Z.nc"
+FILES="file:///home/ref-oc-intranet-restricted/modeles_mf/arome_v2/best_estimate/*/*Z.nc"
+NAME="marc_f1_2500_hourly"
+NAME="arpege-hr-z"
+NAME="arome_v2-z"
+
+
+
+cd $TMPDIR
+TMP=$TMPDIR/JSONS
+CATALOGNAME=$NAME
+RESULT="/home/datawork-lops-iaocea/catalog/kerchunk/"$NAME".json.zst"
+INTAKE="file:///home/datawork-lops-iaocea/catalog/intake/"$NAME".yaml"
+
+date
+python -m auto_kerchunk   --cluster local --workers 14  single-hdf5-to-zarr $FILES $TMP
+python -m auto_kerchunk   --cluster local --workers 14  multi-zarr-to-zarr --compression zstd "file://$TMP/*.json" $RESULT
+chmod go+w $RESULT
+python -m auto_kerchunk   create-intake --catalog-name $CATALOGNAME --name  $NAME "file://$RESULT" $INTAKE
+chmod go+w $INTAKE
+cat /home/datawork-lops-iaocea/catalog/intake/*.yaml >/home/datawork-lops-iaocea/catalog/intake.yaml
+date
+ 
+# Once this is done, you should be able to do following
+#import intake
+#cat=intake.open_catalog("file:///home/datawork-lops-iaocea/catalog/intake/marc_f1_2500_agrif_seine_hourly.yaml")
+#ds=cat.marc_f1_2500_agrif_sein_hourly.to_dask()
+#ds.UZ.mean().compute()
+#in the ds  you get  all the data you listed in the $FILES
+# and you can compute mean, for example
