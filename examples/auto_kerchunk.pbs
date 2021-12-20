@@ -36,7 +36,7 @@ python -m auto_kerchunk   --cluster local --workers 14  multi-zarr-to-zarr --com
 chmod go+w $RESULT
 python -m auto_kerchunk   create-intake --catalog-name $CATALOGNAME --name  $NAME "file://$RESULT" $INTAKE
 chmod go+w $INTAKE
-cat /home/datawork-lops-iaocea/catalog/intake/*.yaml >/home/datawork-lops-iaocea/catalog/intake.yaml
+#cat /home/datawork-lops-iaocea/catalog/intake/*.yaml >/home/datawork-lops-iaocea/catalog/intake.yaml
 date
  
 # Once this is done, you should be able to do following
