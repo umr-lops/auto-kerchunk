@@ -14,13 +14,26 @@ conda activate auto-kerchunk
 #TMPDIR=/dev/shm/pbs.8265504.datarmor0
 
 # Here, update the FILES and NAME
-FILES="file:///home/ref-marc/f1_e2500/best_estimate/2015/*_20150101T*Z.nc"
-FILES="file:///home/ref-marc/f1_e2500/best_estimate/*/*Z.nc"
-FILES="file:///home/ref-oc-intranet-restricted/modeles_mf/arpege_hr/best_estimate/*/*Z.nc"
-FILES="file:///home/ref-oc-intranet-restricted/modeles_mf/arome_v2/best_estimate/*/*Z.nc"
+#to do list
+#/home/ref-ocean-reanalysis/MEDSEA_MULTIYEAR_PHY_006_004/med-cmcc-???-rean-d and hourly (-h)
+# /ref-marc/ww3
+#/home/ref-osisaf-public/data/sst/l3c/seviri
+#/home/ref-osisaf-public/data/sst/l3c/east_atlantic_west_indian/meteosat_data_record/v1
+#/home/datawork-cersat-public/provider/cci_sst/satellite/l3/
+#/home/ref-osisaf-public/data/sst/
+#/home/datawork-cersat-public/provider/cci_sst/satellite/
+
+
+FILES="file:///home/ref-marc/f1_e2500/best_estimate/*/*Z.nc"  #done
 NAME="marc_f1_2500_hourly"
-NAME="arpege-hr-z"
+FILES="file:///home/ref-oc-intranet-restricted/modeles_mf/arpege_hr/best_estimate/*/*Z.nc" #crash
+FILES="file:///home/ref-oc-intranet-restricted/modeles_mf/arome_v2/best_estimate/*/*Z.nc" #crash
+FILES="file:///home/ref-oc-intranet-restricted/modeles_mf/arome_v2/best_estimate/2021/*0825*Z.nc" # pb. due to non hdf5 netcdf4 format.
+FILES="file:///home/ref-oc-intranet-restricted/modeles_mf/arpege_hr/best_estimate/2021/*0101*Z.nc" #pb, due to non hdf5 netcdf4 format.
+FILES="file:///home/ref-marc/ww3/LOIRE-200M/best_estimate/2021/*.nc" #pb, due to non hdf5 netcdf4 format.
 NAME="arome_v2-z"
+NAME="arpege-hr-z"
+NAME="marc_ww3_loire-200m"
 
 
 
@@ -31,11 +44,12 @@ RESULT="/home/datawork-lops-iaocea/catalog/kerchunk/"$NAME".json.zst"
 INTAKE="file:///home/datawork-lops-iaocea/catalog/intake/"$NAME".yaml"
 
 date
-python -m auto_kerchunk   --cluster local --workers 14  single-hdf5-to-zarr $FILES $TMP
-python -m auto_kerchunk   --cluster local --workers 14  multi-zarr-to-zarr --compression zstd "file://$TMP/*.json" $RESULT
+python -m auto_kerchunk   --cluster datarmor-local --workers 14  single-hdf5-to-zarr $FILES $TMP
+python -m auto_kerchunk   --cluster datarmor-local --workers 14  multi-zarr-to-zarr --compression zstd "file://$TMP/*.json" $RESULT
 chmod go+w $RESULT
 python -m auto_kerchunk   create-intake --catalog-name $CATALOGNAME --name  $NAME "file://$RESULT" $INTAKE
 chmod go+w $INTAKE
+# cat does not work
 #cat /home/datawork-lops-iaocea/catalog/intake/*.yaml >/home/datawork-lops-iaocea/catalog/intake.yaml
 date
  
