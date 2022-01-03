@@ -11,48 +11,12 @@ import fsspec
 import rich.console
 import typer
 from dask.diagnostics import ProgressBar
-from rich.table import Table
 
 from .compression import CompressionAlgorithms
 from .utils import parse_dict_option, parse_url
 
 app = typer.Typer()
 console = rich.console.Console()
-
-
-def format_client_versions(versions) -> Table:
-    def format_environment(env):
-        table = Table(box=None)
-        table.add_column("")
-        table.add_column("value")
-        for p, v in sorted(env.items()):
-            table.add_row(str(p), str(v))
-        return table
-
-    def format_system(system):
-        # reformat to a table of package → system
-        table = Table.grid(padding=1)
-        table.add_column("environment", justify="center", style="bold")
-        table.add_column("info")
-
-        for name, env in system.items():
-            subtable = format_environment(env)
-            table.add_row(name, subtable)
-
-        return table
-
-    table = Table.grid(padding=1, pad_edge=True)
-    table.add_column("system", no_wrap=True, justify="center", style="bold red")
-    table.add_column("values")
-    for section in ["client", "scheduler"]:
-        data = versions.get(section)
-        if data is None:
-            continue
-
-        subtable = format_system(data)
-        table.add_row(section, subtable)
-
-    return table
 
 
 def glob_url(fs, url, default):
@@ -67,50 +31,6 @@ def glob_url(fs, url, default):
 
     console.log("globbing:", globbed)
     return [f"{fs.protocol}://{p}" for p in fs.glob(globbed)]
-
-
-@app.callback()
-def cli_main_options(
-    cluster_name: str = typer.Option(
-        None, "--cluster", help="Run dask operations on this cluster"
-    ),
-    cluster_options: str = typer.Option("", help="Additional cluster settings"),
-    workers: int = typer.Option(8, help="spawn N workers"),
-    atleast_workers: int = typer.Option(
-        4, help="wait for at least N workers to have spawned"
-    ),
-):
-    if cluster_name is not None:
-        global ProgressBar
-        import ifremer_clusters
-        from distributed import Client
-
-        options = parse_dict_option(cluster_options)
-        with console.status("[bold blue] Starting cluster", spinner="point") as status:
-            status.update(
-                status=f"[bold blue] Starting cluster:[/] [white]connecting to {cluster_name!r}"
-            )
-            cluster = ifremer_clusters.cluster(cluster_name, **options)
-            console.log("connected to the cluster")
-
-            status.update(
-                status="[bold blue] Starting cluster:[/] [white]creating client"
-            )
-            client = Client(cluster)
-            console.log(f"client: dashboard link: {client.dashboard_link}")
-
-            status.update(
-                status="[bold blue] Starting cluster:[/] [white]spawn workers"
-            )
-            cluster.scale(workers)
-            client.wait_for_workers(n_workers=min(workers, atleast_workers))
-            console.log(f"at least {atleast_workers} workers spawned")
-
-            console.log(
-                format_client_versions(client.get_versions()),
-            )
-
-        console.print(f"[green]cluster {cluster_name} started successfully")
 
 
 @app.command("single-hdf5-to-zarr")
@@ -143,11 +63,20 @@ def cli_single_hdf5_to_zarr(
         100,
         help="dask chunk size",
     ),
+    cluster: str = typer.Option(None, help="The address of a scheduler server."),
 ):
     """extract the metadata from HDF5 files and write it to separate files"""
     import dask.bag as db
 
     from . import convert
+
+    if cluster is not None:
+        from distributed import Client
+
+        client = Client(cluster)
+
+        console.log("connected to:", cluster)
+        console.log("dashboard at:", client.dashboard_link)
 
     with console.status("[blue bold] extracting metadata", spinner="dots") as status:
         status.update(
@@ -236,12 +165,21 @@ def cli_multi_zarr_to_zarr(
             " Can either be the size of the group or a frequency like '6M'."
         ),
     ),
+    cluster: str = typer.Option(None, help="The address of a scheduler server."),
 ):
     """combine the metadata of netcdf files into a single file"""
     from . import combine
 
     open_kwargs = parse_dict_option(open_kwargs)
     concat_kwargs = parse_dict_option(concat_kwargs)
+
+    if cluster is not None:
+        from distributed import Client
+
+        client = Client(cluster)
+
+        console.log("connected to:", cluster)
+        console.log("dashboard at:", client.dashboard_link)
 
     with console.status("[blue bold] combining metadata", spinner="dots") as status:
         status.update(
