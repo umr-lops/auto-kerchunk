@@ -28,9 +28,10 @@ optional dependencies:
 Create your conda enviroment with following command;
 
 ```bash
-mamba create -n auto-kerchunk python==3.9 xarray kerchunk ujson h5py zarr  fsspec  dask rich  typer zstandard intake intake-xarray
+conda create -c conda-forge -n auto-kerchunk python=3.9 mamba 
 conda activate auto-kerchunk
-python -m pip install https://gitlab.ifremer.fr/iaocea/ifremer-cluster
+mamba install xarray kerchunk ujson h5py zarr  fsspec  dask rich  typer zstandard intake intake-xarray -c conda-forge
+python -m pip install https://gitlab.ifremer.fr/iaocea/ifremer-clusters  # see also the ifremer-clusters docs on how to install
 ```
 
 Then install auto-kerchunk to your enviroment as; 
