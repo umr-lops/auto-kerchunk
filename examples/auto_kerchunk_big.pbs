@@ -1,11 +1,8 @@
 #!/bin/bash
-#PBS -q mpi_1
-#PBS -l walltime=24:00:00
-#PBS -l select=1:ncpus=28:mem=128000mb
+#PBS -q omp
+#PBS -l select=1:ncpus=4:mem=60gb
+#PBS -l walltime=10:00:00
 #PBS -m e
-#mamba create -n auto-kerchunk python==3.9 xarray kerchunk ujson h5py zarr  fsspec  dask rich  typer zstandard intake intake-xarray
-#conda activate auto-kerchunk
-#python -m pip install .
 
 # requires:
 # - auto-kerchunk
@@ -13,12 +10,16 @@
 
 source .bashrc
 which conda
+#conda activate auto-kerchunk
 conda activate /home/datawork-lops-iaocea/conda-env/auto-kerchunk
 
-FILES="file:///home/ref-marc/f1_e2500/best_estimate/2011/*Z.nc"  #done
-NAME="tinatest_marc_f1_2500_hourly"
+FILES="file:///home/ref-marc/f1_e2500/best_estimate/*/*Z.nc"  
+FILES="file:///home/datawork-cersat-public/provider/cci_sst/satellite/l3/AVHRRMTA_G/2006/*/*.nc" 
+NAME="tinatest_cersat-public_provider_cci_sst_satellite_l3_AVHRRMTA_G"
 
 TMP=$TMPDIR/JSONS
+TMP=$DATAWORK/tmp/JSONS
+
 CATALOGNAME=$NAME
 
 RESULT="/home/datawork-lops-iaocea/catalog/kerchunk/$NAME.json.zst"
@@ -26,7 +27,7 @@ INTAKE="file:///home/datawork-lops-iaocea/catalog/intake/$NAME.yaml"
 
 # create cluster and wait for the scheduler to have started
 rm -rf scheduler_address
-python -m dask_hpcconfig create datarmor-local --workers 14 --pidfile scheduler_address --silent &
+python -m dask_hpcconfig create datarmor --workers 28 --pidfile scheduler_address --silent &
 until [ -f scheduler_address ]; do sleep 1; done
 
 date
