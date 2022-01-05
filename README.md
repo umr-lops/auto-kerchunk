@@ -16,7 +16,6 @@ required dependencies:
 
 optional dependencies:
 - zstandard
-- ifremer-clusters
 - distributed
 - intake
 - intake-xarray
@@ -28,13 +27,12 @@ optional dependencies:
 Create your conda enviroment with following command;
 
 ```bash
-conda create -c conda-forge -n auto-kerchunk python=3.9 mamba 
+conda create -c conda-forge -n auto-kerchunk python=3.9 mamba
 conda activate auto-kerchunk
 mamba install xarray kerchunk ujson h5py zarr  fsspec  dask rich  typer zstandard intake intake-xarray -c conda-forge
-python -m pip install https://gitlab.ifremer.fr/iaocea/ifremer-clusters  # see also the ifremer-clusters docs on how to install
 ```
 
-Then install auto-kerchunk to your enviroment as; 
+Then install auto-kerchunk to your enviroment as;
 
 ```bash
 python -m pip install https://gitlab.ifremer.fr/iaocea/auto-kerchunk
@@ -54,7 +52,7 @@ ipython kernel install --user --name=auto-kerchunk --display-name=auto-kerchunk
 
 ## Usage
 
-### simple usage 
+### simple usage
 Simplest way to use auto-kerchunk is to use pbs submitting script.
 First copy the example.
 ```bash
@@ -63,14 +61,14 @@ cat auto_kerchunk.pbs  |grep -i marc
 FILES="file:///home/ref-marc/f1_e2500_agrif/MARC_F1-MARS3D-SEINE/best_estimate/*/*Z.nc"
 NAME="marc_f1_2500_agrif_seine_hourly"
 ```
-Then update the enviroment variable 'FILES' as path to your original netcdf data sets 
+Then update the enviroment variable 'FILES' as path to your original netcdf data sets
 and 'NAME' as the name you would like to call the catalogue.
 
 ### advanced usage
 
-You can observe how your computation is going on with dask.  To do so you can start a jupyterlab on datarmor with a 
+You can observe how your computation is going on with dask.  To do so you can start a jupyterlab on datarmor with a
 
-dask-dashboard extension, start one terminal, then execute auto-chunk as follows.  
+dask-dashboard extension, start one terminal, then execute auto-chunk as follows.
 
 ```bash
 TMP=$TMPDIR/JSONS
@@ -84,8 +82,3 @@ python -m auto_kerchunk   --workers 14  single-hdf5-to-zarr $FILES $TMP
 python -m auto_kerchunk   --workers 14  multi-zarr-to-zarr --compression zstd "file://$TMP/*.json" $RESULT
 python -m auto_kerchunk   create-intake --catalog-name $CATALOGNAME --name  $NAME "file://$RESULT" $INTAKE
 ```
-
-
-
-
-

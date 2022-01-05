@@ -183,4 +183,3 @@ dependencies:
     - rich==10.15.2
     - ujson==4.3.0
 prefix: /home1/datahome/todaka/conda-env/auto-kerchunk
-
