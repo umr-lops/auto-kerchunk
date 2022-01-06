@@ -11,8 +11,8 @@
 # - auto-kerchunk
 # - dask-hpcconfig
 
-#source .bashrc
 #which conda
+source "/appli/anaconda/versions/4.8.2/etc/profile.d/conda.sh"
 conda activate /home/datawork-lops-iaocea/conda-env/auto-kerchunk
 cd $TMPDIR
 
