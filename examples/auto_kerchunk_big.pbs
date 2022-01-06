@@ -8,10 +8,10 @@
 # - auto-kerchunk
 # - dask-hpcconfig
 
-source .bashrc
-which conda
-#conda activate auto-kerchunk
+cd $TMPDIR
+source "/appli/anaconda/versions/4.8.2/etc/profile.d/conda.sh"
 conda activate /home/datawork-lops-iaocea/conda-env/auto-kerchunk
+#conda activate auto-kerchunk
 
 FILES="file:///home/ref-marc/f1_e2500/best_estimate/*/*Z.nc"  
 FILES="file:///home/datawork-cersat-public/provider/cci_sst/satellite/l3/AVHRRMTA_G/2006/*/*.nc" 
@@ -24,6 +24,7 @@ CATALOGNAME=$NAME
 
 RESULT="/home/datawork-lops-iaocea/catalog/kerchunk/$NAME.json.zst"
 INTAKE="file:///home/datawork-lops-iaocea/catalog/intake/$NAME.yaml"
+INTAKE="/home/datawork-lops-iaocea/catalog/intake/$NAME.yaml"
 
 # create cluster and wait for the scheduler to have started
 rm -rf scheduler_address
@@ -45,7 +46,7 @@ python -m auto_kerchunk   create-intake \
        --catalog-name $CATALOGNAME \
        --name  $NAME \
        "file://$RESULT" \
-       $INTAKE
+       "file://$INTAKE"
 chmod go+w $INTAKE
 date
 
