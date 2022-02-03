@@ -21,7 +21,7 @@ console = rich.console.Console()
 
 def glob_url(fs, url, default):
     if fs.isfile(url):
-        return url
+        return [url]
 
     if has_magic(url):
         globbed = url
