@@ -1,0 +1,25 @@
+metadata: 
+    parameters:
+        region:
+            description: Region of data
+            type: str
+            default: "osisaf_public_l3_east_atlantic_west_indian_meteosat"
+            allowed: ['osisaf_public_l3_east_atlantic_west_indian_meteosat',
+                 'osisaf_public_l3_naravhrr_metop_a',
+                 'osisaf_public_l3_nar_avhrr_noa_19',
+                 'osisaf_public_l3_west_atlantic_east_pacific_goes']
+            
+name: satellite
+sources:
+  satellite:
+    args:
+      consolidated: false
+      storage_options:
+        fo: "file:///home/datawork-lops-iaocea/catalog/kerchunk/satellite/{{ region }}.json.zst"
+        target_options:
+          compression: zstd
+        target_protocol: file
+      urlpath: reference://    
+    description: satellite 
+    driver: zarr
+    name: satellite

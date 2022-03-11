@@ -1,0 +1,86 @@
+metadata: 
+    parameters:
+        region:
+            description: Region of data
+            type: str
+            default: "b1"
+            allowed: ['ANTILLES-3MIN',
+             'ANTILLES-UG',
+             'ATNE-10M',
+             'FINIS-200M',
+             'GLOBAL-30MIN',
+             'MARC_F1-MARS3D-ADOUR',
+             'MARC_F1-MARS3D-ARMOR',
+             'MARC_F1-MARS3D-FINIS',
+             'MARC_F1-MARS3D-GIRONDE',
+             'MARC_F1-MARS3D-LOIRE',
+             'MARC_F1-MARS3D-MANGAE2500-AGRIF',
+             'MARC_F1-MARS3D-MORBIHAN',
+             'MARC_F1-MARS3D-PDC',
+             'MARC_F1-MARS3D-SEINE',
+             'MARC_L1-MARS2D-AQUI250',
+             'MARC_L1-MARS2D-ATLNE2000',
+             'MARC_L1-MARS2D-FINIS250',
+             'MARC_L1-MARS2D-MANE250',
+             'MARC_L1-MARS2D-MANGA700',
+             'MARC_L1-MARS2D-MANW250',
+             'MARC_L1-MARS2D-SUDBZH250',
+             'MED-6MIN',
+             'MENOR-2MIN',
+             'MENOR-UG',
+             'NORGAS-2MIN',
+             'NORGAS-UG',
+             'NORGAS-UG_V3',
+             'REUNION-UG',
+             'b1',
+             'b1_v10',
+             'b1_v10r2019',
+             'f1_e2500',
+             'f1_e4000',
+             'f2_1200',
+             'f2_1200_sn',
+             'f2_1200_v10',
+             'l1_brest',
+             'l2_v10']
+        filename:
+            description: filename of the data (yearly)
+            type: str
+            default: "2015.json.zst"
+            allowed: ['2000.json.zst',
+             '2001.json.zst',
+             '2002.json.zst',
+             '2003.json.zst',
+             '2004.json.zst',
+             '2005.json.zst',
+             '2006.json.zst',
+             '2007.json.zst',
+             '2008.json.zst',
+             '2009.json.zst',
+             '2010.json.zst',
+             '2011.json.zst',
+             '2012.json.zst',
+             '2013.json.zst',
+             '2014.json.zst',
+             '2015.json.zst',
+             '2016.json.zst',
+             '2017.json.zst',
+             '2018.json.zst',
+             '2019.json.zst',
+             '2020.json.zst',
+             '2021.json.zst',
+             '2022.json.zst']
+            
+name: marc
+sources:
+  marc:
+    args:
+      consolidated: false
+      storage_options:
+        fo: "file:///home/datawork-lops-iaocea/catalog/kerchunk/ref-marc/{{ region }}/{{ filename }}"
+        target_options:
+          compression: zstd
+        target_protocol: file
+      urlpath: reference://    
+    description: "model mars" 
+    driver: zarr
+    name: marc
