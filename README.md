@@ -38,21 +38,11 @@ ATT: use your extranet login instead of to1efa9
 
 ```bash
 
-python -m pip install git+https://to1efa9@gitlab.ifremer.fr/iaocea/dask-hpcconfig.git
-python -m pip install git+https://to1efa9@gitlab.ifremer.fr/iaocea/auto-kerchunk.git
+python -m pip install dask-hpcconfig[all] 'click<8.1'
+
+python -m pip install git+https://to1efa9@gitlab.ifremer.fr/iaocea/auto-kerchunk.git  rich typer 'click<8.1'
 
 ```
-or clone the source and then install from there::
-```bash
-git clone https://gitlab.ifremer.fr/iaocea/dask-hpcconfig
-cd auto-kerchunk
-python -m pip install .
-cd ..
-git clone https://gitlab.ifremer.fr/iaocea/auto-kerchunk
-cd auto-kerchunk
-python -m pip install .
-```
-
 
 If you use auto-kerchunk from jupyterlab, and want to install the kernel,
 ```bash
