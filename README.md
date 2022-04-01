@@ -27,7 +27,7 @@ optional dependencies:
 Create your conda enviroment with following command;
 
 ```bash
-conda create -c conda-forge -n auto-kerchunk python=3.9 
+conda create -c conda-forge -n auto-kerchunk python=3.9
 conda install -c conda-forge -n auto-kerchunk mamba
 conda activate auto-kerchunk
 mamba install xarray kerchunk ujson h5py zarr  fsspec  dask rich  typer zstandard intake intake-xarray -c conda-forge
@@ -38,9 +38,9 @@ ATT: use your extranet login instead of to1efa9
 
 ```bash
 
-python -m pip install dask-hpcconfig[all] 'click<8.1'
+python -m pip install dask-hpcconfig
 
-python -m pip install git+https://to1efa9@gitlab.ifremer.fr/iaocea/auto-kerchunk.git  rich typer 'click<8.1'
+python -m pip install git+https://to1efa9@gitlab.ifremer.fr/iaocea/auto-kerchunk.git
 
 ```
 
