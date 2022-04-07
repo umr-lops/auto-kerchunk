@@ -18,10 +18,10 @@ FILE="/home/ref-marc/f1_e2500_agrif/*SEINE*/best_estimate/2018/"  #UPDATE THIS L
 NAME="testseine"
 GLOB="*20180101*Z.nc"  #UPDATE THIS LINE with the glob of your choice
 
-GRIDNAME=marc_f1-mars3d_grid #UPDATE THIS LINE with the name of the grid you want 
+GRIDNAME=${NAME}_grid 
 GRID="/home/datawork-lops-iaocea/catalog/grid/marc_f1-mars3d-seine-grid.nc" #UPDATE THIS LINE with THE PATH to the gridfile you want 
 MODEL="mars" #UPDATE THIS LINE with the name of the model
-
+POSITIVE="up" # up or down. up is default. Tina suggest this to be takeout later with update of osdyn.
 
 TMP=$DATAWORK/tmp/JSONS
 
@@ -34,7 +34,7 @@ INTAKE="/home/datawork-lops-iaocea/catalog/intake/$NAME.yaml"  #UPDATE THIS LINE
 
 rm -rf scheduler_address
 
-python -m dask_hpcconfig create datarmor --workers 28 --pidfile scheduler_address --silent &
+python -m dask_hpcconfig create datarmor --workers 14 --pidfile scheduler_address --silent &
 until [ -f scheduler_address ]; do sleep 1; done
 
 date
@@ -57,6 +57,8 @@ python -m dask_hpcconfig shutdown $(cat scheduler_address) --silent
 
 rm -rf $TMP
 
+sed -i '1d' $INTAKE
+sed -i "1s/^/metadata:\n    model:  $MODEL \n    positive:  $POSITIVE \n/" $INTAKE
 
 echo "
   $GRIDNAME:
