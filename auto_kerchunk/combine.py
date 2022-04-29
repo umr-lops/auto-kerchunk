@@ -10,6 +10,7 @@ from kerchunk.combine import MultiZarrToZarr
 def extract_timestamp(url, regex):
     from dateutil.parser import parse
 
+    print(url,regex)
     match = regex.search(url)
     if not match:
         return None
@@ -52,6 +53,9 @@ def group_urls(urls, timestamp_regex, frequency):
         import pandas as pd
 
         regex = re.compile(timestamp_regex)
+        #print('timestamp_regex',timestamp_regex)
+        #print('frequency',frequency)
+        #print('urls',urls)
 
         # group by time
         df = pd.DataFrame(

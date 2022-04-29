@@ -252,6 +252,25 @@ def cli_create_intake(
     description: str = typer.Option(
         "description", help="description of the catalog entry"
     ),
+    freq: Optional[str] = typer.Option(
+        None,
+        help=(
+            "divide the files into groups (only for files divided by time for now)."
+            " Can work only with '1Y' now."
+        ),
+    ),
+    model: Optional[str] = typer.Option(
+        None,
+        help=(
+            " set parameter model in the yaml file if not None"
+        ),
+    ),
+    positive: Optional[str] = typer.Option(
+        None,
+        help=(
+            " set parameter positive in the yaml file if not None"
+        ),
+    ),
 ):
     """create a intake catalog for a kerchunk metadata file
 
@@ -265,10 +284,14 @@ def cli_create_intake(
         raise SystemExit(1)
 
     console.log("creating intake catalog for kerchunk metadata file at:", url)
-    entry = create_catalog_entry(name, description, url)
+    entry,metadata = create_catalog_entry(name, description, url, freq, model, positive )
+    print("entry")
+    print(entry)
+    print("metadata")
+    print(metadata)
 
     catalog = Catalog.from_dict(
-        name=catalog_name, description=catalog_description, entries={name: entry}
+        metadata=metadata,name=catalog_name, description=catalog_description, entries={name: entry}
     )
 
     catalog.save(out)
