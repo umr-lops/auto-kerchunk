@@ -1,0 +1,86 @@
+metadata: 
+    parameters:
+        region:
+            description: Region of data
+            type: str
+            default: "b1"
+            allowed: ['f1_e2500_agrif/MARC_F1-MARS3D-ADOUR',
+         'f1_e2500_agrif/MARC_F1-MARS3D-ARMOR',
+         'f1_e2500_agrif/MARC_F1-MARS3D-FINIS',
+         'f1_e2500_agrif/MARC_F1-MARS3D-GIRONDE',
+         'f1_e2500_agrif/MARC_F1-MARS3D-LOIRE',
+         'f1_e2500_agrif/MARC_F1-MARS3D-MANGAE2500-AGRIF',
+         'f1_e2500_agrif/MARC_F1-MARS3D-MORBIHAN',
+         'f1_e2500_agrif/MARC_F1-MARS3D-PDC',
+         'f1_e2500_agrif/MARC_F1-MARS3D-SEINE',
+         'l1_v9/MARC_L1-MARS2D-AQUI250',
+         'l1_v9/MARC_L1-MARS2D-ATLNE2000',
+         'l1_v9/MARC_L1-MARS2D-FINIS250',
+         'l1_v9/MARC_L1-MARS2D-MANE250',
+         'l1_v9/MARC_L1-MARS2D-MANGA700',
+         'l1_v9/MARC_L1-MARS2D-MANW250',
+         'l1_v9/MARC_L1-MARS2D-SUDBZH250',
+         'b1',
+         'b1_v10',
+         'b1_v10r2019',
+         'f1_e2500',
+         'f1_e4000',
+         'f2_1200',
+         'f2_1200_sn',
+         'f2_1200_v10',
+         'l1_brest',
+         'l2_v10',
+         'ww3/ANTILLES-3MIN',
+         'ww3/ANTILLES-UG',
+         'ww3/ATNE-10M',
+         'ww3/FINIS-200M',
+         'ww3/GLOBAL-30MIN',
+         'ww3/MED-6MIN',
+         'ww3/MENOR-2MIN',
+         'ww3/MENOR-UG',
+         'ww3/NORGAS-2MIN',
+         'ww3/NORGAS-UG',
+         'ww3/NORGAS-UG_V3',
+         'ww3/REUNION-UG']
+        year:
+            description: filename of the data (yearly)
+            type: str
+            default: "2015"
+            allowed: ['2000',
+             '2001',
+             '2002',
+             '2003',
+             '2004',
+             '2005',
+             '2006',
+             '2007',
+             '2008',
+             '2009',
+             '2010',
+             '2011',
+             '2012',
+             '2013',
+             '2014',
+             '2015',
+             '2016',
+             '2017',
+             '2018',
+             '2019',
+             '2020',
+             '2021',
+             '2022']
+            
+name: marc
+sources:
+  marc:
+    args:
+      consolidated: false
+      storage_options:
+        fo: "https://data-taos.ifremer.fr/kerchunk/ref-marc/{{ region }}/{{ year }}.json.zst"
+        target_options:
+          compression: zstd
+        target_protocol: https
+      urlpath: reference://    
+    description: "ref-marc" 
+    driver: zarr
+    name: marc
