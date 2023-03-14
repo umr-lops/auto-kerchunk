@@ -1,0 +1,47 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: auto-kerchunk
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Justus
+    family-names: Magin
+    orcid: 'https://orcid.org/0000-0002-4254-8002'
+    affiliation: >-
+      Univ Brest, CNRS, Ifremer, IRD, Laboratoire
+      d'Océanographie Physique et Spatiale (LOPS), IUEM,
+      F29280, Plouzané, France
+  - given-names: Tina
+    family-names: Odaka
+    orcid: 'https://orcid.org/0000-0002-1500-0156'
+    affiliation: >-
+      Univ Brest, CNRS, Ifremer, IRD, Laboratoire
+      d'Océanographie Physique et Spatiale (LOPS), IUEM,
+      F29280, Plouzané, France
+  - affiliation: >-
+      Univ Brest, CNRS, Ifremer, IRD, Laboratoire
+      d'Océanographie Physique et Spatiale (LOPS), IUEM,
+      F29280, Plouzané, France
+    given-names: Alexandre
+    family-names: Derrien
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7733839
+    description: Zenodo DOI
+repository-code: 'https://github.com/umr-lops/auto-kerchunk'
+abstract: >-
+  'auto-kerchunk' provides an easy interface for creating
+  kerchunk and intake catalogues from NetCDF files in an HPC
+  environment.
+keywords:
+  - Xarray
+  - Zarr
+  - kerchunk
+  - Intake
+  - catalogue
+version: 2023.03.0
+date-released: '2023-03-14'
